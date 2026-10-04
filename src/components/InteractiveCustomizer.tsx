@@ -47,6 +47,8 @@ export const InteractiveCustomizer: React.FC<InteractiveCustomizerProps> = ({
   // Artwork Preset / Upload
   const [selectedArtPreset, setSelectedArtPreset] = useState<string>('trilha_pick');
   const [customArtName, setCustomArtName] = useState<string>('');
+  const [uploadedImageUrl, setUploadedImageUrl] = useState<string | null>(null);
+  const [uploadedImageScale, setUploadedImageScale] = useState<number>(100);
   const [clientNotes, setClientNotes] = useState<string>('Conferir prévia no WhatsApp (88) 99225-5256 antes de estampar.');
 
   // Notification
@@ -112,6 +114,7 @@ export const InteractiveCustomizer: React.FC<InteractiveCustomizerProps> = ({
       colorSelected: itemColorName,
       sizeSelected: itemType === 'SHIRT' ? shirtSize : undefined,
       uploadedArtName: customArtName || (selectedArtPreset !== 'none' ? `Preset: ${selectedArtPreset}` : undefined),
+      previewUrl: uploadedImageUrl || undefined,
       notes: clientNotes,
     };
 
@@ -239,8 +242,19 @@ export const InteractiveCustomizer: React.FC<InteractiveCustomizerProps> = ({
                   {/* Artwork Layer on Mug */}
                   <div className="absolute top-[32%] left-[28%] w-[42%] flex flex-col items-center justify-center text-center px-2 pointer-events-none">
                     
-                    {/* Trilha Pick Logo Preset */}
-                    {selectedArtPreset === 'trilha_pick' && (
+                    {/* User Uploaded Device Image (100% Real Rendering) */}
+                    {uploadedImageUrl ? (
+                      <div 
+                        className="mb-1.5 flex items-center justify-center p-1 rounded-sm border border-slate-700/50 bg-white/20 backdrop-blur-xs transition-transform"
+                        style={{ transform: `scale(${uploadedImageScale / 100})` }}
+                      >
+                        <img 
+                          src={uploadedImageUrl} 
+                          alt="Sua Estampa Carregada" 
+                          className="max-h-20 max-w-full object-contain rounded drop-shadow" 
+                        />
+                      </div>
+                    ) : selectedArtPreset === 'trilha_pick' ? (
                       <div className="w-12 h-12 mb-1.5 flex items-center justify-center">
                         <svg viewBox="0 0 100 100" className="w-full h-full drop-shadow">
                           <path d="M 20 50 C 20 25, 80 25, 80 50" fill="none" stroke="#ff6600" strokeWidth="8" strokeLinecap="round" />
@@ -252,7 +266,7 @@ export const InteractiveCustomizer: React.FC<InteractiveCustomizerProps> = ({
                           <polygon points="47,44 61,39 61,43 47,48" fill="#ffffff" />
                         </svg>
                       </div>
-                    )}
+                    ) : null}
 
                     {selectedArtPreset === 'soundwave' && (
                       <div className="flex items-center gap-1 mb-1.5">
@@ -311,7 +325,19 @@ export const InteractiveCustomizer: React.FC<InteractiveCustomizerProps> = ({
                         : 'top-[36%] w-[50%]'
                     }`}
                   >
-                    {selectedArtPreset === 'trilha_pick' && (
+                    {/* User Uploaded Device Image (100% Real Rendering) */}
+                    {uploadedImageUrl ? (
+                      <div 
+                        className="mb-2 flex items-center justify-center p-1 rounded-sm border border-slate-700/50 bg-white/10 backdrop-blur-xs transition-transform"
+                        style={{ transform: `scale(${uploadedImageScale / 100})` }}
+                      >
+                        <img 
+                          src={uploadedImageUrl} 
+                          alt="Sua Estampa Carregada" 
+                          className="max-h-24 max-w-full object-contain rounded drop-shadow-lg" 
+                        />
+                      </div>
+                    ) : selectedArtPreset === 'trilha_pick' ? (
                       <div className="w-14 h-14 mb-2 flex items-center justify-center">
                         <svg viewBox="0 0 100 100" className="w-full h-full drop-shadow">
                           <path d="M 20 50 C 20 25, 80 25, 80 50" fill="none" stroke="#ff6600" strokeWidth="8" strokeLinecap="round" />
@@ -323,7 +349,7 @@ export const InteractiveCustomizer: React.FC<InteractiveCustomizerProps> = ({
                           <polygon points="47,44 61,39 61,43 47,48" fill="#ffffff" />
                         </svg>
                       </div>
-                    )}
+                    ) : null}
 
                     {selectedArtPreset === 'lightning' && (
                       <Zap className="w-8 h-8 mb-1.5 animate-pulse" style={{ color: textColor, fill: textColor }} />
@@ -496,27 +522,86 @@ export const InteractiveCustomizer: React.FC<InteractiveCustomizerProps> = ({
                 ))}
               </div>
 
-              {/* Upload Art file helper */}
-              <div className="mt-3 p-3 rounded-lg border border-dashed border-slate-800 bg-slate-950/60 flex items-center justify-between text-xs">
-                <div className="flex items-center gap-2">
-                  <UploadCloud className="w-4 h-4 text-[#ff944d]" />
-                  <span className="text-slate-300">
-                    {customArtName ? `Arquivo: ${customArtName}` : 'Já tem sua arte ou foto em PNG/PDF?'}
-                  </span>
+              {/* Upload Art file helper with Real Device Image Support */}
+              <div className="mt-3 p-3.5 rounded-lg border border-dashed border-orange-500/40 bg-slate-950/80 space-y-2.5 text-xs">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <UploadCloud className="w-4 h-4 text-[#ff944d] shrink-0" />
+                    <div>
+                      <p className="text-white font-semibold text-xs">
+                        {customArtName ? `Foto carregada: ${customArtName}` : 'Carregar imagem do seu computador ou celular'}
+                      </p>
+                      <p className="text-slate-400 text-[11px]">
+                        PNG, JPG ou WEBP (renderiza instantaneamente na caneca ou camisa)
+                      </p>
+                    </div>
+                  </div>
+                  <label className="cursor-pointer px-3 py-1.5 rounded-md bg-[#ff6600] hover:bg-[#ea580c] text-white font-bold text-xs transition-all shadow-xs shrink-0">
+                    <span>{customArtName ? 'Trocar Foto' : 'Buscar Foto'}</span>
+                    <input
+                      type="file"
+                      accept="image/*"
+                      className="hidden"
+                      onChange={(e) => {
+                        const file = e.target.files?.[0];
+                        if (file) {
+                          setCustomArtName(file.name);
+                          setSelectedArtPreset('custom_upload');
+                          const reader = new FileReader();
+                          reader.onload = (event) => {
+                            if (typeof event.target?.result === 'string') {
+                              setUploadedImageUrl(event.target.result);
+                            }
+                          };
+                          reader.readAsDataURL(file);
+                        }
+                      }}
+                    />
+                  </label>
                 </div>
-                <label className="cursor-pointer text-[#ff944d] hover:text-[#ff6600] font-bold">
-                  <span>{customArtName ? 'Trocar' : 'Carregar'}</span>
-                  <input
-                    type="file"
-                    accept="image/*,.pdf"
-                    className="hidden"
-                    onChange={(e) => {
-                      if (e.target.files && e.target.files[0]) {
-                        setCustomArtName(e.target.files[0].name);
-                      }
-                    }}
-                  />
-                </label>
+
+                {/* If image is uploaded: Show controls & thumbnail */}
+                {uploadedImageUrl && (
+                  <div className="pt-2 border-t border-slate-800 flex flex-wrap items-center justify-between gap-2">
+                    <div className="flex items-center gap-2">
+                      <img 
+                        src={uploadedImageUrl} 
+                        alt="Miniatura" 
+                        className="w-8 h-8 rounded object-cover border border-orange-500" 
+                      />
+                      <span className="text-[11px] text-emerald-400 font-medium">
+                        ✓ Imagem gerada na prévia 3D!
+                      </span>
+                    </div>
+
+                    <div className="flex items-center gap-3">
+                      <div className="flex items-center gap-1.5 text-[11px] text-slate-300">
+                        <span>Tamanho:</span>
+                        <input
+                          type="range"
+                          min="50"
+                          max="160"
+                          value={uploadedImageScale}
+                          onChange={(e) => setUploadedImageScale(Number(e.target.value))}
+                          className="w-20 accent-[#ff6600] h-1"
+                        />
+                        <span className="font-mono text-[10px]">{uploadedImageScale}%</span>
+                      </div>
+
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setUploadedImageUrl(null);
+                          setCustomArtName('');
+                          setSelectedArtPreset('trilha_pick');
+                        }}
+                        className="text-xs text-rose-400 hover:text-rose-300 font-medium underline"
+                      >
+                        Remover
+                      </button>
+                    </div>
+                  </div>
+                )}
               </div>
             </div>
 

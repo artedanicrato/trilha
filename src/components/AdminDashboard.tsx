@@ -20,10 +20,16 @@ import {
   FileSpreadsheet,
   X,
   Lock,
-  ChevronRight
+  ChevronRight,
+  Building2,
+  Cloud,
+  Briefcase
 } from 'lucide-react';
 import { Api } from '../services/api';
 import { useAuth } from '../context/AuthContext';
+import { HRModule } from './admin/HRModule';
+import { FiscalModule } from './admin/FiscalModule';
+import { CdnSettingsModule } from './admin/CdnSettingsModule';
 import type { 
   Order, 
   Product, 
@@ -40,11 +46,52 @@ interface AdminDashboardProps {
   onClose: () => void;
 }
 
-type TabType = 'METRICS' | 'ORDERS' | 'INVENTORY' | 'USERS' | 'PAYMENTS';
+type TabType = 'METRICS' | 'ORDERS' | 'INVENTORY' | 'USERS' | 'PAYMENTS' | 'RH' | 'FISCAL' | 'CDN_IMAGES';
 
 export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onClose }) => {
   const { user, isAdmin, isOperator } = useAuth();
   const [activeTab, setActiveTab] = useState<TabType>('METRICS');
+
+  // Strict Administrative Access Control
+  if (!isAdmin) {
+    return (
+      <div className="fixed inset-0 z-50 overflow-y-auto bg-slate-950/90 backdrop-blur-md flex items-center justify-center p-4">
+        <div className="max-w-md w-full rounded-2xl bg-slate-900 border border-slate-800 p-6 text-center space-y-4 shadow-2xl">
+          <div className="w-12 h-12 rounded-full bg-rose-950/80 text-rose-400 border border-rose-800 flex items-center justify-center mx-auto">
+            <Lock className="w-6 h-6" />
+          </div>
+          <div>
+            <h3 className="text-lg font-bold text-white">Acesso Exclusivo da Administração</h3>
+            <p className="text-xs text-slate-400 mt-1 leading-relaxed">
+              O painel administrativo da Trilha Sonora é restrito à diretoria. Módulos de Recursos Humanos, Notas Fiscais da Prefeitura e Financeiro exigem perfil de Administrador.
+            </p>
+          </div>
+          <div className="p-3.5 rounded-lg bg-slate-950 border border-slate-800 text-xs text-left space-y-1.5">
+            <p className="text-[#ff944d] font-bold">Credenciais Administrativas Oficiais:</p>
+            <p className="text-white font-mono">E-mail: <strong>admin@trilhasonora.com.br</strong></p>
+            <p className="text-white font-mono">Senha Padrão: <strong>admin123</strong></p>
+          </div>
+          <div className="flex gap-2">
+            <button
+              onClick={onClose}
+              className="flex-1 py-2 rounded-lg bg-slate-800 text-slate-300 hover:text-white text-xs font-semibold"
+            >
+              Voltar ao Site
+            </button>
+            <button
+              onClick={async () => {
+                await Api.login('admin@trilhasonora.com.br', 'admin123');
+                window.location.reload();
+              }}
+              className="flex-1 py-2 rounded-lg bg-[#ff6600] hover:bg-[#ea580c] text-white text-xs font-bold shadow-md"
+            >
+              Entrar como Admin
+            </button>
+          </div>
+        </div>
+      </div>
+    );
+  }
   
   // Data states
   const [metrics, setMetrics] = useState<DashboardMetrics | null>(null);
@@ -307,6 +354,43 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onClose }) => {
         >
           <DollarSign className="w-4 h-4" />
           <span>Gateway & Financeiro</span>
+        </button>
+
+        {/* New Administrative Modules: RH, Fiscal/Prefeitura, and CDN Storage */}
+        <button
+          onClick={() => setActiveTab('RH')}
+          className={`py-3 px-4 text-xs font-bold border-b-2 flex items-center gap-2 whitespace-nowrap transition-colors ${
+            activeTab === 'RH'
+              ? 'border-[#ff6600] text-[#ff944d]'
+              : 'border-transparent text-slate-400 hover:text-slate-200'
+          }`}
+        >
+          <Briefcase className="w-4 h-4" />
+          <span>Recursos Humanos (RH)</span>
+        </button>
+
+        <button
+          onClick={() => setActiveTab('FISCAL')}
+          className={`py-3 px-4 text-xs font-bold border-b-2 flex items-center gap-2 whitespace-nowrap transition-colors ${
+            activeTab === 'FISCAL'
+              ? 'border-[#ff6600] text-[#ff944d]'
+              : 'border-transparent text-slate-400 hover:text-slate-200'
+          }`}
+        >
+          <Building2 className="w-4 h-4" />
+          <span>NFS-e Prefeitura Crato & Contabilidade</span>
+        </button>
+
+        <button
+          onClick={() => setActiveTab('CDN_IMAGES')}
+          className={`py-3 px-4 text-xs font-bold border-b-2 flex items-center gap-2 whitespace-nowrap transition-colors ${
+            activeTab === 'CDN_IMAGES'
+              ? 'border-[#ff6600] text-[#ff944d]'
+              : 'border-transparent text-slate-400 hover:text-slate-200'
+          }`}
+        >
+          <Cloud className="w-4 h-4" />
+          <span>Cloudinary / Imgix CDN</span>
         </button>
       </div>
 
@@ -963,6 +1047,15 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onClose }) => {
             </div>
           </div>
         )}
+
+        {/* TAB 6: RECURSOS HUMANOS (RH) */}
+        {activeTab === 'RH' && <HRModule />}
+
+        {/* TAB 7: NOTA FISCAL SEFIN CRATO & CONTABILIDADE */}
+        {activeTab === 'FISCAL' && <FiscalModule orders={orders} />}
+
+        {/* TAB 8: CLOUDINARY & IMGIX CDN */}
+        {activeTab === 'CDN_IMAGES' && <CdnSettingsModule />}
 
       </div>
 

@@ -14,6 +14,7 @@ import { AdminDashboard } from './components/AdminDashboard';
 import { AuthModal } from './components/AuthModal';
 import { BrandLogo } from './components/BrandLogo';
 import { Api } from './services/api';
+import { INITIAL_PRODUCTS } from './data/initialProducts';
 import type { Product, Order } from './types';
 import { 
   Palette, 
@@ -61,9 +62,10 @@ function Storefront() {
         isGraphic,
         search: searchQuery || undefined,
       });
-      setProducts(res.products || []);
+      setProducts(res.products && res.products.length > 0 ? res.products : INITIAL_PRODUCTS);
     } catch (err) {
-      console.error('Falha ao carregar produtos:', err);
+      console.error('Falha ao carregar produtos do servidor, usando catálogo CDN local:', err);
+      setProducts(INITIAL_PRODUCTS);
     } finally {
       setIsLoadingProducts(false);
     }
